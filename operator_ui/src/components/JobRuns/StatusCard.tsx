@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import classNames from 'classnames'
-import PaddedCard from '@chainlink/styleguide/components/PaddedCard'
+import PaddedCard from '@chainlink/styleguide/src/components/PaddedCard'
 import { titleCase } from 'change-case'
 import StatusIcon from '../JobRuns/StatusIcon'
 import { Grid } from '@material-ui/core'
@@ -17,13 +17,13 @@ import ElapsedTime from '../ElapsedTime'
 const styles = (theme: Theme) =>
   createStyles({
     completed: {
-      backgroundColor: theme.palette.success.light
+      // backgroundColor: theme.palette.success.light
     },
     errored: {
       backgroundColor: theme.palette.error.light
     },
     pending: {
-      backgroundColor: theme.palette.warning.light
+      // backgroundColor: theme.palette.warning.light
     },
     statusCard: {
       '&:last-child': {
@@ -33,9 +33,6 @@ const styles = (theme: Theme) =>
     head: {
       display: 'flex',
       alignItems: 'center'
-    },
-    statusIcon: {
-      display: 'inline-block'
     },
     statusText: {
       display: 'inline-block',
@@ -49,7 +46,7 @@ const styles = (theme: Theme) =>
       color: theme.typography.display1.color
     },
     earnedLink: {
-      color: theme.palette.success.main
+      // color: theme.palette.success.main
     }
   })
 
@@ -85,9 +82,7 @@ const StatusCard = ({ title, classes, children, jobRun }: IProps) => {
   return (
     <PaddedCard className={classNames(classes.statusCard, statusClass)}>
       <div className={classes.head}>
-        <StatusIcon className={classes.statusIcon}  width={80} >
-          {title}
-        </StatusIcon>
+        <StatusIcon width={80}>{title}</StatusIcon>
         <Grid container alignItems="center" className={classes.statusRoot}>
           <Grid item xs={9}>
             <Typography className={classes.statusText} variant="h5">
