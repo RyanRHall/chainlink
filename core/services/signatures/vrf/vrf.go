@@ -169,7 +169,7 @@ func IsCurveXOrdinate(x *big.Int) bool {
 // HashToCurve is a one-way hash function onto the curve
 // Need to convert the input to kyber interface, as well?
 func HashToCurve(p kyber.Point, input *big.Int) (kyber.Point, error) {
-	px, py = p.Coordinates()
+	px, py := p.Coordinates()
 	x, err := ZqHash(P, px, py, input)
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func HashToCurve(p kyber.Point, input *big.Int) (kyber.Point, error) {
 		}
 		x.Set(nx)
 	}
-	return curve.Secp256k1{}.Point().UnmarshalBinary(append(x.Bytes(), )
+	return curve.Secp256k1{}.Point().UnmarshalBinary(append(x.Bytes(), 0))
 }
 
 // ScalarFromCurve returns a hash for the curve points. Corresponds to the hash
