@@ -6,7 +6,6 @@ contract SchnorrSECP256K1 {
     // solium-disable-next-line indentation
     0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
   // solium-disable-next-line zeppelin/no-arithmetic-operations
-  uint256 constant public HALF_Q = (Q >> 1) + 1;
 
   /** **************************************************************************
       @notice verifySignature returns true iff passed a valid Schnorr signature.
@@ -19,8 +18,8 @@ contract SchnorrSECP256K1 {
       **************************************************************************
       @dev TO CREATE A VALID SIGNATURE FOR THIS METHOD
 
-      @dev First PKx must be less than HALF_Q. Then follow these instructions
-           (see evm/test/schnorr_test.js, for an example of carrying them out):
+      @dev Follow these instructions (see evm/test/schnorr_test.js, for an
+           example of carrying them out):
       @dev 1. Hash the target message to a uint256, called _msgHash here, using
               keccak256
 
@@ -30,8 +29,7 @@ contract SchnorrSECP256K1 {
 
       @dev 3. Compute k*g in the secp256k1 group, where g is the group
               generator. (This is the same as computing the public key from the
-              secret key k. But it's OK if k*g's x ordinate is greater than
-              HALF_Q.)
+              secret key k.)
 
       @dev 4. Compute the ethereum address for k*g. This is the lower 160 bits
               of the keccak hash of the concatenated affine coordinates of k*g,
@@ -74,17 +72,8 @@ contract SchnorrSECP256K1 {
       giant-step" is only 128 bits, so this weakening constitutes no compromise
       in the security of the signatures or the key.
 
-      @dev The constraint _signingPubKeyX < HALF_Q comes from Eq. (281), p. 24
-      of Yellow Paper version 78d7b9a. ecrecover only accepts "s" inputs less
-      than HALF_Q, to protect against a signature- malleability vulnerability in
-      ECDSA. Schnorr does not have this vulnerability, but we must account for
-      ecrecover's defense anyway. And since we are abusing ecrecover by putting
-      _signingPubKeyX in ecrecover's "s" argument the constraint applies to
-      _signingPubKeyX, even though it represents a value in the base field, and
-      has no natural relationship to the order of the curve's cyclic group.
       **************************************************************************
-      @param _signingPubKeyX is the x ordinate of the public key. This must be
-             less than HALF_Q. 
+      @param _signingPubKeyX is the x ordinate of the public key. 
       @param _pubKeyYParity is 0 if the y ordinate of the public key is even, 1 
              if it's odd.
       @param _signature is the actual signature, described as s in the above
@@ -100,7 +89,6 @@ contract SchnorrSECP256K1 {
     uint256 _signature,
     uint256 _msgHash,
     address _nonceTimesGeneratorAddress) external pure returns (bool) {
-    require(_signingPubKeyX < HALF_Q, "Public-key x >= HALF_Q");
     // Avoid signature malleability from multiple representations for ℤ/Qℤ elts
     require(_signature < Q, "signature must be reduced modulo Q");
 
