@@ -7,6 +7,7 @@ module.exports = {
   network: 'test',
   compilers: {
     solc: {
+      docker: true,
       version: '0.4.24'
     }
   },
