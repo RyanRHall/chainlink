@@ -148,7 +148,7 @@ contract VRF {
   uint256 constant public BOTTOM_160_BITS = 2**161 - 1;
 
   // Returns the ethereum address associated with point.
-  function point_address(uint256[2] memory point) public pure returns(address) {
+  function pointAddress(uint256[2] memory point) public pure returns(address) {
     bytes memory packedPoint = abi.encodePacked(point);
     // Lower 160 bits of the keccak hash of (x,y) as 64 bytes
     return address(uint256(keccak256(packedPoint)) & BOTTOM_160_BITS);
@@ -290,12 +290,12 @@ contract VRF {
     // https://ethresear.ch/t/you-can-kinda-abuse-ecrecover-to-do-ecmul-in-secp256k1-today/2384/9
     // The point corresponding to the address returned by
     // ecrecover(-_s*_p[0],v,_p[0],_c*_p[0]) is
-    // (_p[0]⁻¹ mod FIELD_SIZE)*(_c*_p[0]*_p-(-_s)*_p[0]*g)=_c*_p+_s*g, where v
+    // (_p[0]⁻¹ mod GROUP_ORDER)*(_c*_p[0]-(-_s)*_p[0]*g)=_c*_p+_s*g, where v
     // is the parity of _p[1]. See https://crypto.stackexchange.com/a/18106
-    bytes32 pseudoHash = bytes32(FIELD_SIZE - mulmod(_p[0], _s, FIELD_SIZE));
+    bytes32 pseudoHash = bytes32(GROUP_ORDER - mulmod(_p[0], _s, GROUP_ORDER));
     // https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v
     uint8 v = (_p[1] % 2 == 0) ? 27 : 28;
-    bytes32 pseudoSignature = bytes32(mulmod(_c, _p[0], FIELD_SIZE));
+    bytes32 pseudoSignature = bytes32(mulmod(_c, _p[0], GROUP_ORDER));
     address computed = ecrecover(pseudoHash, v, bytes32(_p[0]), pseudoSignature);
     return computed == _lcWitness;
   }
@@ -306,7 +306,7 @@ contract VRF {
                              uint256 _s, uint256[2] memory _p2,
                              uint256[2] memory _sp2Witness, uint256 _zInv)
     public pure returns (uint256[2] memory) {
-    require(_p1[0] != _p2[0], "points must differ");
+    require(_cp1Witness[0] != _sp2Witness[0], "points must differ in sum");
     require(ecmulVerify(_p1, _c, _cp1Witness),
             "First multiplication check failed");
     require(ecmulVerify(_p2, _s, _sp2Witness),
@@ -332,7 +332,7 @@ contract VRF {
                           address _uWitness,
                           uint256[2] memory _cGammaWitness,
                           uint256[2] memory _sHashWitness, uint256 _zInv)
-    public view returns (bool) {
+    public returns (bool) {
     // NB: Curve operations already check that (_pkX, _pkY), (_gammaX, _gammaY)
     // are valid curve points. No need to do that explicitly.
     require(verifyLinearCombinationWithGenerator(_c, _pk, _s, _uWitness));
@@ -378,5 +378,25 @@ contract VRF {
     return verifyVRFProof(_pk, _gamma, _c, _s, _seed, _uWitness, _cGammaWitness,
                           _sHashWitness, _zInv) &&
       (uint256(keccak256(abi.encodePacked(_gamma))) == _output);
+  }
+
+  function nybbleToChar(uint8 c) public pure returns (byte) {
+    require(c < 16, "nybble must be in {0, ..., 16}");
+    if (c < 10) {
+      return byte(c+48); // Numeric value
+    }
+    return byte(c - 10 + 65);
+  }
+
+  function bytes32ToString(bytes32 x) public pure returns (string) {
+    bytes memory bytesString = new bytes(66);
+    bytesString[0] = "0";
+    bytesString[1] = "x";
+    for (uint j = 0; j < 32; j++) {
+      uint8 b = uint8(x[j]);
+      bytesString[j*2+2] = nybbleToChar(b / 16);
+      bytesString[j*2+3] = nybbleToChar(b % 16);
+    }
+    return string(bytesString);
   }
 }
